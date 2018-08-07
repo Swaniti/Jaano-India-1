@@ -1,3 +1,4 @@
+
 var outputArea = $("#chat-output");
 
 $("#user-input-form").on("submit", function (e) {
@@ -5,6 +6,7 @@ $("#user-input-form").on("submit", function (e) {
   e.preventDefault();
 
   var message = $("#user-input").val();
+  //exports.input = message;
 
   outputArea.append("\n    <div class='bot-message'>\n      <div class='message'>\n        " +
 
@@ -15,7 +17,7 @@ $("#user-input-form").on("submit", function (e) {
 
 
   setTimeout(function () {
-    outputArea.append("\n      <div class='user-message'>\n        <div class='message'>\n          I'm like 20 lines of JavaScript I can't actually talk to you.\n        </div>\n      </div>\n    ");
+    outputArea.append("\n      <div class='user-message'>\n        <div class='message'>\n          hello\n        </div>\n      </div>\n    ");
 
 
 

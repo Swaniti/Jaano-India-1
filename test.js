@@ -5,6 +5,7 @@ var prompt = require('prompt-sync')();
 var AssistantV1 = require('watson-developer-cloud/assistant/v1');
 var papa = require('PapaParse/papaparse.js');
 var fs = require('fs');
+//var chat = require('js/index');
 // Set up Assistant service wrapper.
 var service = new AssistantV1({
   username: 'd3a44bff-a1ed-43e2-82fd-b1cb49840b20', // replace with service username
@@ -16,6 +17,7 @@ var workspace_id = '5c7a0384-503c-4fe9-8707-0e60b3f98478'; // replace with works
 
 var file = fs.readFileSync(__dirname+'/hackathon+data+set.csv','utf8');
 var csv = papa.parse(file, {header:true,delimiter:",",});
+var output = '';
 //console.log(csv);
 // Start conversation with empty message.
 service.message({
@@ -61,7 +63,7 @@ function processResponse(err, response) {
   			}  			
   		} 		
 
-  		var output = '';
+  		output = '';
   		//constructing the dialogue
   		switch(intent)
   		{
@@ -105,9 +107,24 @@ function processResponse(err, response) {
   					output += field[0]+' in '+state[0]+' : '+sum; 					
   				}
   				
-  				else
+  				else if(field.length>0)
   				{
   					//print fvalue of all state.districts.type in csv
+  					var sum=0.0,subsum =0.0;
+  					var st = csv.data[0]['State'];
+  					output=type+' '+field[0] + '\n';
+  					for(var i=0;i<csv.data.length;++i)  					
+  						if(csv.data[i]['State']==st && csv.data[i]['Tier']==type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')    																			
+  							subsum+=parseFloat(csv.data[i][field[0]]);
+  						else if(csv.data[i]['State']!=st && csv.data[i]['Tier']==type)
+  						{  
+  							output+=st+' : '+ subsum+'\n';
+  							st = csv.data[i]['State'];
+  							sum+=subsum;
+  							subsum=0.0;
+  						}
+  						
+  					output += '\n' + type+' '+field[0]+' in india : '+sum;
   				}
   				break;
   			};
@@ -207,6 +224,7 @@ function processResponse(err, response) {
 	  }
 	 console.log('\noutput message : ');
 	 console.log(output);
+	 //exports.output = output;
 	  
   if(response.intents.length>0&&response.intents[0].intent=="bye")
   {
