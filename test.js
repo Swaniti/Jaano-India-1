@@ -58,7 +58,7 @@ function processResponse(err, response) {
   					area = response.entities[i].value;
   				else
   					type = response.entities[i].value; 				
-  			}
+  			}  			
   		} 		
 
   		var output = '';
@@ -80,6 +80,19 @@ function processResponse(err, response) {
   						if(csv.data[i]['District']==district[0] && csv.data[i]['Tier']==type)
   							output = type + ' ' + field[0] + ' in ' + district[0] + ' : ' + csv.data[i][field[0]];
   				}
+  				else if(state.length>0 && area == 'district')
+  				{
+  					//print individual fvalue of all district.type of state along with total sum
+  					var sum=0.0;
+  					output=type+' '+field[0] + ' in : \n';
+  					for(var i=0;i<csv.data.length;++i)  					
+  						if(csv.data[i]['State']==state[0] && csv.data[i]['Tier']==type)
+  						{
+  							sum+=parseFloat(csv.data[i][field[0]]);
+  							output+=csv.data[i]['District']+' : '+ csv.data[i][field[0]]+'\n';
+  						}
+  					output += type+' '+field[0]+' in '+state[0]+' : '+sum;
+  				}  				
   				else if(state.length>0)
   				{
   					//print sum of all district.type fvalues of that state 
@@ -87,11 +100,14 @@ function processResponse(err, response) {
   					for(var i=0;i<csv.data.length;++i)  					
   						if(csv.data[i]['State']==state[0] && csv.data[i]['Tier']==type)
   							sum+=parseFloat(csv.data[i][field[0]]);
-  					output = 'Total '+type+' '+field[0]+' in '+state[0]+' : '+sum; 					
+  						if(type != 'Total')  						
+  						output=type+' ';
+  					output += field[0]+' in '+state[0]+' : '+sum; 					
   				}
+  				
   				else
   				{
-  					//print fvalue of all districts.type in csv
+  					//print fvalue of all state.districts.type in csv
   				}
   				break;
   			};
