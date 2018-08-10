@@ -3,7 +3,7 @@
 
 var prompt = require('prompt-sync')();
 var AssistantV1 = require('watson-developer-cloud/assistant/v1');
-var papa = require('PapaParse/papaparse.js');
+var papa = require('papaparse');
 var fs = require('fs');
 var sleep = require('system-sleep');
 
@@ -119,19 +119,19 @@ function processResponse(err, response) {
             //print fvalue of all state.districts.type in csv
             var sum=0.0,subsum =0.0;
             var st = csv.data[0]['State'];
-            output=type+' '+field[0] + '\n';
+            output=type+' '+field[0] + '<br>';
             for(var i=0;i<csv.data.length;++i)            
               if(csv.data[i]['State']==st && csv.data[i]['Tier']==type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')                                          
                 subsum+=parseFloat(csv.data[i][field[0]]);
               else if(csv.data[i]['State']!=st && csv.data[i]['Tier']==type)
               {  
-                output+=st+' : '+ subsum+'\n';
+                output+=st+' : '+ subsum+'<br>';
                 st = csv.data[i]['State'];
                 sum+=subsum;
                 subsum=0.0;
               }
               
-            output += '\n' + type+' '+field[0]+' in india : '+sum;
+            output += '<br>' + type+' '+field[0]+' in india : '+sum;
           }
           else
           {
@@ -164,19 +164,19 @@ function processResponse(err, response) {
             //print fvalue of all state.districts.type in csv
             var sum=0.0,subsum =0.0;
             var st = csv.data[0]['State'];
-            output=type+' '+field[0] + '\n';
+            output=type+' '+field[0] + '<br>';
             for(var i=0;i<csv.data.length;++i)            
               if(csv.data[i]['State']==st && csv.data[i]['Tier']==type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')                                          
                 subsum+=parseFloat(csv.data[i][field[0]]);
               else if(csv.data[i]['State']!=st && csv.data[i]['Tier']==type)
               {  
-                output+=st+' : '+ subsum+'\n';
+                output+=st+' : '+ subsum+'<br>';
                 st = csv.data[i]['State'];
                 sum+=subsum;
                 subsum=0.0;
               }
               
-            output += '\n' + type+' '+field[0]+' in india : '+sum;
+            output += '<br>' + type+' '+field[0]+' in india : '+sum;
 
           }
           break; 
@@ -196,7 +196,7 @@ function processResponse(err, response) {
             //if(type != 'Total')             
             //  output=output+type+' ';
             output ='District with highest ' + field[0]+' in '+state[0]+' : '+dist + ' ('+max+')'; 
-          }
+          }          
           else if(area=='district')
           {
             //highest fvalue among all districts of india
@@ -294,7 +294,7 @@ function processResponse(err, response) {
             //first extracting district.fvalue
             var dfval = 0.0;
             for(var i=0;i<csv.data.length;++i)
-              if(csv.data[i]['District']==district[0] && csv.data[i]['Tier']==type)
+              if(csv.data[i]['District']==district[0] && csv.data[i]['Tier']==type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')
                 dfval = parseFloat(csv.data[i][field[0]]);
 
             //comparing each district.type fvalue with dfvalue
@@ -304,8 +304,32 @@ function processResponse(err, response) {
               {
                 var fval = parseFloat(csv.data[i][field[0]]);
                 if(fval>dfval)
-                  output+=csv.data[i]['District']+'\n';
+                  output+=csv.data[i]['District']+'<br>';
               } 
+          }
+          else if(area=='state' && state.length!=0 && field.length == 1)
+          {
+            //print all state names whose f.value > state.fvalue
+
+            //first extracting  state.fvalue
+            var sfval = 0.0;
+            for(var i=0;i<csv.data.length;++i)
+              if(csv.data[i]['State']==state[0] && csv.data[i]['Tier']==type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')
+                sfval = parseFloat(csv.data[i][field[0]]);
+
+            //comparing each state.type fvalue with sfvalue
+            output='States with '+field[0]+' greater than that of '+state[0]+' : <br>';
+            var st='',fval=0.0;
+            for(var i=0;i<csv.data.length;++i)            
+              if(csv.data[i]['State']==st && csv.data[i]['Tier']==type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')                                          
+                fval+=parseFloat(csv.data[i][field[0]]);
+              else if(csv.data[i]['State']!=st && csv.data[i]['Tier']==type)
+              {               
+                if(fval>sfval)
+                  output+=csv.data[i][field[0]]+'<br>';
+                st = csv.data[i]['State'];                            
+                fval=0.0;
+              }
           }
           else if(area == 'district' && state.length>0)
           {
@@ -326,12 +350,12 @@ function processResponse(err, response) {
                 if(parseFloat(csv.data[i][field[0]])>parseFloat(csv.data[i][field[1]]))
                   output+=csv.data[i]['District']+'\n'; 
           }
-          else if(area =='state')
+          else if(area =='state' && field.length == 2) 
           {
             // print all state names of India where total fvalue1 > fvalue2
             var fv1 =0.0,fv2=0.0,maxst='';
             var st = csv.data[0]['State'];
-            output = 'State with '+field[0]+' greater than '+field[1]+' : \n';
+            output = 'State with '+field[0]+' greater than '+field[1]+' : <br>';
             for(var i=0;i<csv.data.length;++i)            
               if(csv.data[i]['State']==st && csv.data[i]['Tier']==type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')
               {                                         
@@ -341,7 +365,7 @@ function processResponse(err, response) {
               else if(csv.data[i]['State']!=st && csv.data[i]['Tier']==type)
               {               
                 if(fv1>fv2)
-                  output+=st+'\n';
+                  output+=st+'<br>';
                 st = csv.data[i]['State'];                            
                 fv1=0.0;
                 fv2=0.0;
@@ -406,7 +430,6 @@ function processResponse(err, response) {
                 fv2=0.0;
               }
           }
-          else
           break;
         };
         case 'capability':{
@@ -428,7 +451,7 @@ module.exports = {
     start: function(query){
       // Start conversation with input message.
       service.message({ workspace_id: workspace_id, input: { text: query },}, processResponse);
-      sleep(2000);
+      sleep(3000);
       return output;
     }
 

@@ -6,6 +6,7 @@ var AssistantV1 = require('watson-developer-cloud/assistant/v1');
 var papa = require('PapaParse/papaparse.js');
 var fs = require('fs');
 var express = require('express');
+var PriorityQueue = require('fastpriorityqueue');
 
 // Set up Assistant service wrapper.
 var service = new AssistantV1({
@@ -19,7 +20,7 @@ var workspace_id = '5c7a0384-503c-4fe9-8707-0e60b3f98478'; // replace with works
 var file = fs.readFileSync(__dirname+'/hackathon+data+set.csv','utf8');
 var csv = papa.parse(file, {header:true,delimiter:",",});
 var output = '';
-
+var newMessageFromUser='';
 function extractNumber(str){
 	var num = str.match(/\d/g);
 	num=num.join("");
@@ -185,7 +186,70 @@ function processResponse(err, response) {
   				break; 
   			};
   			case 'maximum':{
-  				if(area=='district'&&state.length>0)
+          var c = extractNumber(newMessageFromUser);
+          if(c>0 && area=='district'  && state.length>0)
+          {
+            var dist = [];
+            for(var i=0; i<csv.data.length; i++){
+              if(csv.data[i]['State']==state[0] && csv.data[i]['Tier'] == type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')
+                dist[csv.data[i]['District']] = parseFloat(csv.data[i][field[0]]);
+            }
+            var items = Object.keys(dist).map(function(key){
+              return [key, dist[key]];
+            });
+            items.sort(function(first, second){
+              return second[1] - first[1];
+            });
+            output = 'top '+ c+ ' districts with '+ field[0]+' in '+state[0] + '\n';
+            for(var i=0; i<c; i++){
+              output += items[i][0] + ' (' + items[i][1] + ' ) \n';
+            }
+          }
+          else if(c>0 && area=='district')
+          {
+            var dist = [];
+            for(var i=0; i<csv.data.length; i++){
+              if(csv.data[i]['Tier'] == type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')
+                dist[csv.data[i]['District']] = parseFloat(csv.data[i][field[0]]);
+            }
+            var items = Object.keys(dist).map(function(key){
+              return [key, dist[key]];
+            });
+            items.sort(function(first, second){
+              return second[1] - first[1];
+            });
+            output = 'top '+ c+ ' districts with '+ field[0]+'\n';
+            for(var i=0; i<c; i++){
+              output += items[i][0] + ' (' + items[i][1] + ' ) \n';
+            }
+          }
+          else if(c>0 && area=='state')
+          {            
+            var dist = [];
+            var sum=0.0;
+            var st=csv.data[0]['State'];
+            for(var i=0; i<csv.data.length; i++){
+              if(csv.data[i]['State']==st && csv.data[i]['Tier'] == type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')
+                sum+=parseFloat(csv.data[i][field[0]]);
+              else if(csv.data[i]['State']!=st && csv.data[i]['Tier']==type)
+              {
+                dist[st] = sum;
+                sum=0;
+                st = csv.data[i]['State'];
+              }
+            }
+            var items = Object.keys(dist).map(function(key){
+              return [key, dist[key]];
+            });
+            items.sort(function(first, second){
+              return second[1] - first[1];
+            });
+            output = 'top '+ c+ ' states with highest '+ field[0]+'\n';
+            for(var i=0; i<c; i++){
+              output += items[i][0] + ' (' + items[i][1] + ' ) \n';
+            }
+          }
+  				else if(area=='district'&&state.length>0)
   				{
   					//highest fvalue among all ditricts.type of that state
   					var max=0;var dist='';
@@ -310,10 +374,35 @@ function processResponse(err, response) {
   								output+=csv.data[i]['District']+'\n';
   						} 
   				}
+          else if(area=='state' && state.length!=0 && field.length == 1)
+          {
+            //print all state names whose f.value > state.fvalue
+
+            //first extracting  state.fvalue
+            var sfval = 0.0;
+            for(var i=0;i<csv.data.length;++i)
+              if(csv.data[i]['State']==state[0] && csv.data[i]['Tier']==type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')
+                sfval += parseFloat(csv.data[i][field[0]]);
+        
+            //comparing each state.type fvalue with sfvalue
+            output='States with '+field[0]+' greater than that of '+state[0]+' : <br>';
+            var st='',fval=0.0;
+            for(var i=0;i<csv.data.length;++i)          
+            {  
+              if(csv.data[i]['State']==st && csv.data[i]['Tier']==type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')                                          
+                fval+=parseFloat(csv.data[i][field[0]]);
+              else if(csv.data[i]['State']!=st && csv.data[i]['Tier']==type)
+              {               
+                if(fval>sfval)
+                  output += st + '<br>';
+                st = csv.data[i]['State'];                            
+                fval=0.0;
+              }
+            }
+          }
   				else if(area == 'district' && state.length>0)
   				{
-  					// print all district names of that state where fvalue1 > fvalue2
-  					console.log('reached');
+  					// print all district names of that state where fvalue1 > fvalue2  				
   					output = 'Districts in '+ state[0] +' where '+field[0]+' is greater than '+field[1]+' : \n';
   					for(var i=0;i<csv.data.length;++i)
   						if(csv.data[i]['State']==state[0] && csv.data[i]['Tier']==type  && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')
@@ -332,11 +421,13 @@ function processResponse(err, response) {
   				else if(area =='state')
   				{
   					// print all state names of India where total fvalue1 > fvalue2
+            console.log(state.length);
   					var fv1 =0.0,fv2=0.0,maxst='';
   					var st = csv.data[0]['State'];
   					output = 'State with '+field[0]+' greater than '+field[1]+' : \n';
   					for(var i=0;i<csv.data.length;++i)  					
-  						if(csv.data[i]['State']==st && csv.data[i]['Tier']==type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')
+  					{	
+              if(csv.data[i]['State']==st && csv.data[i]['Tier']==type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')
   						{    																			
   							fv1+=parseFloat(csv.data[i][field[0]]);
   							fv2+=parseFloat(csv.data[i][field[1]]);
@@ -344,13 +435,13 @@ function processResponse(err, response) {
   						else if(csv.data[i]['State']!=st && csv.data[i]['Tier']==type)
   						{    						
   							if(fv1>fv2)
-  								output+=st+'\n';
+  								output += st+'\n';
   							st = csv.data[i]['State'];							 							
   							fv1=0.0;
   							fv2=0.0;
   						} 					
+            }
   				}
-  				else
   				break;
   			};
   			case 'lessthan':{
@@ -375,6 +466,32 @@ function processResponse(err, response) {
   								output+=csv.data[i]['District']+'\n';
   						} 
   				}
+           else if(area=='state' && state.length!=0 && field.length == 1)
+          {
+            //print all state names whose f.value > state.fvalue
+
+            //first extracting  state.fvalue
+            var sfval = 0.0;
+            for(var i=0;i<csv.data.length;++i)
+              if(csv.data[i]['State']==state[0] && csv.data[i]['Tier']==type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')
+                sfval += parseFloat(csv.data[i][field[0]]);
+        
+            //comparing each state.type fvalue with sfvalue
+            output='States with '+field[0]+' less than that of '+state[0]+' : <br>';
+            var st='',fval=0.0;
+            for(var i=0;i<csv.data.length;++i)          
+            {  
+              if(csv.data[i]['State']==st && csv.data[i]['Tier']==type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')                                          
+                fval+=parseFloat(csv.data[i][field[0]]);
+              else if(csv.data[i]['State']!=st && csv.data[i]['Tier']==type)
+              {               
+                if(fval<sfval)
+                  output += st + '<br>';
+                st = csv.data[i]['State'];                            
+                fval=0.0;
+              }
+            }
+          }
   				else if(area == 'district' && state.length>0)
   				{
   					// print all district names of that state where fvalue1 < fvalue2
@@ -409,12 +526,11 @@ function processResponse(err, response) {
   							fv2=0.0;
   						}
   				}
-  				else
   				break;
   			};
   			case 'capability':{
-  				console.log('you can ask me general public statistical data.\nsome examples could be : \n');
-  				console.log('Total population of rajasthan\nstates where literates are more than illiterates'); 
+  				output = 'you can ask me general public statistical data.\nsome examples could be : \n';
+          output+='\nTotal population of rajasthan\nstates where literates are more than illiterates';  				
   				break;
   			};
   			case 'bye':{
@@ -433,7 +549,7 @@ function processResponse(err, response) {
   else
   {	  
 	  //prompt user for new message
-	  var newMessageFromUser = prompt('>> ');
+	  newMessageFromUser = prompt('>> ');
 	  service.message({ workspace_id: workspace_id, input: { text: newMessageFromUser },context:response.context,}, processResponse)
   }
 }
