@@ -3,10 +3,10 @@
 
 var prompt = require('prompt-sync')();
 var AssistantV1 = require('watson-developer-cloud/assistant/v1');
-var papa = require('PapaParse/papaparse.js');
+var papa = require('papaparse');
 var fs = require('fs');
 var express = require('express');
-var PriorityQueue = require('fastpriorityqueue');
+
 
 // Set up Assistant service wrapper.
 var service = new AssistantV1({
@@ -23,10 +23,12 @@ var output = '';
 var newMessageFromUser='';
 function extractNumber(str){
 	var num = str.match(/\d/g);
-	num=num.join("");
 	var n=0.0;
-	if(!num=="")
+	if(num)
+	{
+		num=num.join("");
 		n=parseInt(num);
+	}	
 	return n;
 }
 
@@ -186,7 +188,7 @@ function processResponse(err, response) {
   				break; 
   			};
   			case 'maximum':{
-          var c = extractNumber(newMessageFromUser);
+          var c = parseFloat(extractNumber(newMessageFromUser));
           if(c>0 && area=='district'  && state.length>0)
           {
             var dist = [];
@@ -301,7 +303,70 @@ function processResponse(err, response) {
   				break;
   			};
   			case 'minimum':{
-  				if(area=='district'&&state.length>0)
+          var c = parseFloat(extractNumber(newMessageFromUser));
+          if(c>0 && area=='district' && state.length>0)
+          {            
+            var dist = [];
+            for(var i=0; i<csv.data.length; i++){
+              if(csv.data[i]['State']==state[0] && csv.data[i]['Tier'] == type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')
+                dist[csv.data[i]['District']] = parseFloat(csv.data[i][field[0]]);
+            }
+            var items = Object.keys(dist).map(function(key){
+              return [key, dist[key]];
+            });
+            items.sort(function(first, second){
+              return first[1] - second[1];
+            });
+            output = c+ ' districts with lowest '+ field[0]+' in '+state[0] + '\n';
+            for(var i=0; i<c; i++){
+              output += items[i][0] + ' (' + items[i][1] + ' ) \n';
+            }
+          } 
+          else if(c>0 && area=='district')
+          {            
+            var dist = [];
+            for(var i=0; i<csv.data.length; i++){
+              if(csv.data[i]['Tier'] == type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')
+                dist[csv.data[i]['District']] = parseFloat(csv.data[i][field[0]]);
+            }
+            var items = Object.keys(dist).map(function(key){
+              return [key, dist[key]];
+            });
+            items.sort(function(first, second){
+              return first[1] - second[1];
+            });
+            output = c+ ' districts with least '+ field[0]+'\n';
+            for(var i=0; i<c; i++){
+              output += items[i][0] + ' (' + items[i][1] + ' ) \n';
+            }
+          } 
+          else if(c>0 && area == 'state')
+          {            
+            var dist = [];
+            var sum=0.0;
+            var st=csv.data[0]['State'];
+            for(var i=0; i<csv.data.length; i++){
+              if(csv.data[i]['State']==st && csv.data[i]['Tier'] == type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')
+                sum+=parseFloat(csv.data[i][field[0]]);
+              else if(csv.data[i]['State']!=st && csv.data[i]['Tier']==type)
+              {
+                dist[st] = sum;
+                sum=0;
+                st = csv.data[i]['State'];
+              }
+            }
+            var items = Object.keys(dist).map(function(key){
+              return [key, dist[key]];
+            });
+            items.sort(function(first, second){
+              return first[1] - second[1];
+            });
+            output = c+ ' states with lowest '+ field[0]+'\n';
+            for(var i=0; i<c; i++){
+              output += items[i][0] + ' (' + items[i][1] + ' ) \n';
+            }
+          }        
+  				else if(area=='district'&&state.length>0)
   				{
   					//lowest fvalue among all ditricts.type of that state
   					var min=9999999999.0;var dist='';
@@ -353,7 +418,44 @@ function processResponse(err, response) {
   				break;
   			};
   			case 'greaterthan':{
-  				if(area =='district' && district.length!=0 && field.length == 1)
+          var c = parseFloat(extractNumber(newMessageFromUser));
+          if(c>0 && area=='district' && state.length>0)
+          {
+            console.log('const : '+c);
+            // print all district names of that state where fvalue1 > c        
+            output = 'Districts in '+ state[0] +' where '+field[0]+' is greater than '+c+' : \n';
+            for(var i=0;i<csv.data.length;++i)
+              if(csv.data[i]['State']==state[0] && csv.data[i]['Tier']==type  && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')
+                if(parseFloat(csv.data[i][field[0]])>c)
+                  output+=csv.data[i]['District']+'\n'; 
+          }
+          else if(c>0 && area=='district')
+          {
+            // print all district names where fvalue1 > c        
+            output = 'Districts in '+ state[0] +' where '+field[0]+' is greater than '+c+' : \n';
+            for(var i=0;i<csv.data.length;++i)
+              if(csv.data[i]['Tier']==type  && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')
+                if(parseFloat(csv.data[i][field[0]])>c)
+                  output+=csv.data[i]['District']+'\n'; 
+          }
+          else if(c>0 && area=='state')
+          {            
+            var sum=0.0;
+            var st=csv.data[0]['State'];
+            output = 'States with ' + field[0] + ' greater than ' + c + ' : \n';
+            for(var i=0; i<csv.data.length; i++){
+              if(csv.data[i]['State']==st && csv.data[i]['Tier'] == type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')
+                sum+=parseFloat(csv.data[i][field[0]]);
+              else if(csv.data[i]['State']!=st && csv.data[i]['Tier']==type)
+              {
+                if(sum>c)
+                  output += st+' ('+sum+') \n';
+                sum=0;
+                st = csv.data[i]['State'];
+              }
+            }            
+          }
+  				else if(area =='district' && district.length!=0 && field.length == 1)
   				{
   					// print all ditricts names whose f.value > district.fvalue
   					// ex - districts where total poulation > that of jaipur
@@ -445,7 +547,46 @@ function processResponse(err, response) {
   				break;
   			};
   			case 'lessthan':{
-  				if(area =='district' && district.length!=0 && field.length == 1)
+          var c = parseFloat(extractNumber(newMessageFromUser));
+          if(c>0 && area=='district' && state.length>0)
+          {
+            console.log('const : '+c);
+            // print all district names of that state where fvalue1 > c        
+            output = 'Districts in '+ state[0] +' where '+field[0]+' is less than '+c+' : \n';
+            for(var i=0;i<csv.data.length;++i)
+              if(csv.data[i]['State']==state[0] && csv.data[i]['Tier']==type  && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')
+                if(parseFloat(csv.data[i][field[0]])<c)
+                  output+=csv.data[i]['District']+'\n'; 
+          }
+          else if(c>0 && area=='district')
+          {
+            console.log('const : '+c);
+            // print all district names where fvalue1 > c        
+            output = 'Districts in '+ state[0] +' where '+field[0]+' is less than '+c+' : \n';
+            for(var i=0;i<csv.data.length;++i)
+              if(csv.data[i]['Tier']==type  && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')
+                if(parseFloat(csv.data[i][field[0]])<c)
+                  output+=csv.data[i]['District']+'\n'; 
+          }
+          else if(c>0 && area=='state')
+          {
+            console.log('const : '+c);
+            var sum=0.0;
+            var st=csv.data[0]['State'];
+            output = 'States with ' + field[0] + ' less than ' + c + ' : \n';
+            for(var i=0; i<csv.data.length; i++){
+              if(csv.data[i]['State']==st && csv.data[i]['Tier'] == type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')
+                sum+=parseFloat(csv.data[i][field[0]]);
+              else if(csv.data[i]['State']!=st && csv.data[i]['Tier']==type)
+              {
+                if(sum<c)
+                  output += st+' ('+sum+') \n';
+                sum=0;
+                st = csv.data[i]['State'];
+              }
+            }
+          }
+  				else if(area =='district' && district.length!=0 && field.length == 1)
   				{
   					// print all ditricts names whose f.value < district.fvalue
   					// ex - districts where total poulation < that of jaipur
@@ -537,7 +678,7 @@ function processResponse(err, response) {
   				console.log('Goodbye, have a nice day :)');
   				break; 
 	  		};
-	  }
+	    }
 	 console.log('\noutput message : ');
 	 console.log(output);
 	 //exports.output = output;
