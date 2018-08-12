@@ -253,15 +253,21 @@ function processResponse(err, response) {
 			  else if(c>0 && area=='state')
 			  {            
 				var dist = [];
-				var sum=0.0;
+				var sum=0.0,count=0;
 				var st=csv.data[0]['State'];
 				for(var i=0; i<csv.data.length; i++){
 				  if(csv.data[i]['State']==st && csv.data[i]['Tier'] == type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')
-					sum+=parseFloat(csv.data[i][field[0]]);
+				  {
+					  sum+=parseFloat(csv.data[i][field[0]]);
+					  count++;
+				  }
 				  else if(csv.data[i]['State']!=st && csv.data[i]['Tier']==type)
 				  {
+					if(isPercent(field[0]))
+						sum/=count;
 					dist[st] = sum;
 					sum=0;
+					count=0;
 					st = csv.data[i]['State'];
 				  }
 				}
@@ -273,16 +279,15 @@ function processResponse(err, response) {
 				});
 				output = 'top '+ c+ ' states with highest '+ field[0]+'<br>';
 				for(var i=0; i<c; i++){
-				  output += items[i][0] + ' (' + items[i][1] + ' ) <br>';
+				  output += items[i][0] + ' (' + items[i][1].toFixed(2) + ' ) <br>';
 				}
 			  }
   				else if(area=='district'&&state.length>0)
-  				{
-					console.log('triggered!');
+  				{					
   					//highest fvalue among all ditricts.type of that state
   					var max=0;var dist='';
   					for(var i=0;i<csv.data.length;++i)
-  						if(csv.data[i]['State']==state[0] && csv.data[i]['Tier']==type)
+  						if(csv.data[i]['State']==state[0] && csv.data[i]['Tier']==type && parseInt(csv.data[i][field[0]])>0)
   						{
   							max=Math.max(max,parseFloat(csv.data[i][field[0]]));
   							dist=csv.data[i]['District'];
@@ -290,43 +295,51 @@ function processResponse(err, response) {
   					//ouptut=;
   					//if(type != 'Total')  						
   					//	output=output+type+' ';
-  					output ='District with highest ' + field[0]+' in '+state[0]+' : '+dist + ' ('+max+')'; 
+  					output ='District with highest ' + field[0]+' in '+state[0]+' : <b>'+dist + ' ('+max+')</b>'; 
   				}
   				else if(area=='district')
-  				{
-					console.log('triggered!');
+  				{					
   					//highest fvalue among all districts of india
   					var max=0;var dist='';
   					for(var i=0;i<csv.data.length;++i)
-  						if(csv.data[i]['Tier']==type && csv.data[i][field[0]]>max)
+  						if(csv.data[i]['Tier']==type && parseInt(csv.data[i][field[0]])>0 && csv.data[i][field[0]]>max)
   						{
   							max=parseFloat(csv.data[i][field[0]]);
   							dist=csv.data[i]['District'];
   						}
-  					output='District with highest'+field[0]+ ' : '+dist + ' ('+max+')';
+  					output='District with highest '+field[0]+ ' : <b>'+dist + ' ('+max+')</b>';
   				}
   				else if(area=='state')
-  				{
-					console.log('triggered!');
+  				{					
   					//highest fvalue among all state.type
-  					var max=0.0,subsum =0.0,maxst='';
+  					var max=0.0,subsum =0.0,count=0,maxst='';
   					var st = csv.data[0]['State'];
-  					output=type+' '+field[0] + '<br>';
-  					for(var i=0;i<csv.data.length;++i)  					
-  						if(csv.data[i]['State']==st && csv.data[i]['Tier']==type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')    																			
-  							subsum+=parseFloat(csv.data[i][field[0]]);
+  					//output=type+' '+field[0] + '<br>';
+				
+  					for(var i=0;i<csv.data.length;++i)  	
+					{
+  						if(csv.data[i]['State']==st && csv.data[i]['Tier']==type  && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')    																			
+						{
+							subsum += parseFloat(csv.data[i][field[0]]);
+							++count;
+						}
   						else if(csv.data[i]['State']!=st && csv.data[i]['Tier']==type)
-  						{    						
+  						{    	
+							console.log(subsum + ' ' + count);	
+							if(isPercent(field[0]) && count>0)
+								subsum/=count;
   							if(subsum>max)
-  							{
+  							{								
   								max=subsum;
   								maxst=st;
   							}	
   							st = csv.data[i]['State'];							 							
   							subsum=0.0;
+							count=0;
   						}
-  						
-  					output = 'State with highest '+field[0]+' : '+maxst+' ('+max+')';
+					}
+  					console.log('entered');
+  					output = 'State with highest '+field[0]+' : <b>'+maxst+' ('+max.toFixed(2)+')</b>';
   				}
   				break;
   			};
@@ -371,15 +384,20 @@ function processResponse(err, response) {
           else if(c>0 && area == 'state')
           {            
             var dist = [];
-            var sum=0.0;
+            var sum=0.0,count=0;
             var st=csv.data[0]['State'];
             for(var i=0; i<csv.data.length; i++){
               if(csv.data[i]['State']==st && csv.data[i]['Tier'] == type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')
-                sum+=parseFloat(csv.data[i][field[0]]);
+			  {
+				  count++;
+				  sum+=parseFloat(csv.data[i][field[0]]);
+			  }
               else if(csv.data[i]['State']!=st && csv.data[i]['Tier']==type)
               {
+				  if(isPercent(field[0]) && count>0)
                 dist[st] = sum;
                 sum=0;
+				count=0;
                 st = csv.data[i]['State'];
               }
             }
@@ -424,14 +442,19 @@ function processResponse(err, response) {
   				else if(area=='state')
   				{
   					//lowest fvalue among all state.type
-  					var max=9999999999.0,subsum =0.0,maxst='';
+  					var max=9999999999.0,subsum =0.0,count=0,maxst='';
   					var st = csv.data[0]['State'];
   					output=type+' '+field[0] + '<br>';
   					for(var i=0;i<csv.data.length;++i)  					
   						if(csv.data[i]['State']==st && csv.data[i]['Tier']==type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')    																			
-  							subsum+=parseFloat(csv.data[i][field[0]]);
+						{
+							++count;
+							subsum+=parseFloat(csv.data[i][field[0]]);
+						}
   						else if(csv.data[i]['State']!=st && csv.data[i]['Tier']==type)
-  						{    						
+  						{    		
+							if(isPercent(field[0]) && count>0)
+								subsum/=count;
   							if(subsum<max)
   							{
   								max=subsum;
@@ -439,9 +462,10 @@ function processResponse(err, response) {
   							}	
   							st = csv.data[i]['State'];							 							
   							subsum=0.0;
+							count=0;
   						}
   						
-  					output = 'State with lowest '+field[0]+' : '+maxst+' ('+max+')';
+  					output = 'State with lowest '+field[0]+' : <b>'+maxst+' ('+max+')</b>';
   				}
   				break;
   			};
@@ -468,18 +492,25 @@ function processResponse(err, response) {
                   output+=csv.data[i]['District']+'<br>'; 
           }
           else if(c>0 && area=='state')
-          {            
-            var sum=0.0;
+          {           
+			//print all states where fvalue > c
+            var sum=0.0,count=0;
             var st=csv.data[0]['State'];
             output = 'States with ' + field[0] + ' greater than ' + c + ' : <br>';
             for(var i=0; i<csv.data.length; i++){
               if(csv.data[i]['State']==st && csv.data[i]['Tier'] == type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')
-                sum+=parseFloat(csv.data[i][field[0]]);
+			  {
+				  count++;
+				  sum+=parseFloat(csv.data[i][field[0]]);
+			  }
               else if(csv.data[i]['State']!=st && csv.data[i]['Tier']==type)
               {
+				  if(isPercent(field[0]) && count>0)
+								sum/=count;
                 if(sum>c)
-                  output += st+' ('+sum+') <br>';
+                  output += st+' ('+sum.toFixed(2)+') <br>';
                 sum=0;
+				count=0;
                 st = csv.data[i]['State'];
               }
             }            
@@ -510,24 +541,36 @@ function processResponse(err, response) {
             //print all state names whose f.value > state.fvalue
 
             //first extracting  state.fvalue
-            var sfval = 0.0;
+            var sfval = 0.0,dcount=0;
             for(var i=0;i<csv.data.length;++i)
               if(csv.data[i]['State']==state[0] && csv.data[i]['Tier']==type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')
-                sfval += parseFloat(csv.data[i][field[0]]);
+			  {
+				  sfval += parseFloat(csv.data[i][field[0]]);
+				  dcount++;
+			  }
+			  if(isPercent(field[0]) && dcount>0)
+				  sfval/=dcount;
         
             //comparing each state.type fvalue with sfvalue
             output='States with '+field[0]+' greater than that of '+state[0]+' : <br>';
             var st='',fval=0.0;
+			dcount=0;
             for(var i=0;i<csv.data.length;++i)          
             {  
               if(csv.data[i]['State']==st && csv.data[i]['Tier']==type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')                                          
-                fval+=parseFloat(csv.data[i][field[0]]);
+			  {
+				  fval+=parseFloat(csv.data[i][field[0]]);
+				  ++dcount;
+			  }
               else if(csv.data[i]['State']!=st && csv.data[i]['Tier']==type)
               {               
+				if(isPercent(field[0]) && dcount>0)
+					fval/=dcount;
                 if(fval>sfval)
                   output += st + '<br>';
                 st = csv.data[i]['State'];                            
                 fval=0.0;
+				dcount=0;
               }
             }
           }
@@ -553,7 +596,7 @@ function processResponse(err, response) {
   				{
   					// print all state names of India where total fvalue1 > fvalue2
 					console.log(state.length);
-  					var fv1 =0.0,fv2=0.0,maxst='';
+  					var fv1 =0.0,fv2=0.0,maxst='',count=0;
   					var st = csv.data[0]['State'];
   					output = 'State with '+field[0]+' greater than '+field[1]+' : <br>';
   					for(var i=0;i<csv.data.length;++i)  					
@@ -562,14 +605,22 @@ function processResponse(err, response) {
   						{    																			
   							fv1+=parseFloat(csv.data[i][field[0]]);
   							fv2+=parseFloat(csv.data[i][field[1]]);
+							count++;
+							
   						}
   						else if(csv.data[i]['State']!=st && csv.data[i]['Tier']==type)
-  						{    						
+  						{    	
+							if(isPercent(field[0]) && count>0)
+							{
+								fv1/=count;
+								fv2/=count;
+							}
   							if(fv1>fv2)
   								output += st+'<br>';
   							st = csv.data[i]['State'];							 							
   							fv1=0.0;
   							fv2=0.0;
+							count=0;
   						} 					
             }
   				}
@@ -579,8 +630,7 @@ function processResponse(err, response) {
 				console.log('entered less than');
         var c = parseFloat(extractNumber(newMessageFromUser));
           if(c>0 && area=='district' && state.length>0)
-          {
-            console.log('const : '+c);
+          {            
             // print all district names of that state where fvalue1 > c        
             output = 'Districts in '+ state[0] +' where '+field[0]+' is less than '+c+' : <br>';
             for(var i=0;i<csv.data.length;++i)
@@ -589,8 +639,7 @@ function processResponse(err, response) {
                   output+=csv.data[i]['District']+'<br>'; 
           }
           else if(c>0 && area=='district')
-          {
-            console.log('const : '+c);
+          {            
             // print all district names where fvalue1 > c        
             output = 'Districts in '+ state[0] +' where '+field[0]+' is less than '+c+' : <br>';
             for(var i=0;i<csv.data.length;++i)
@@ -599,19 +648,24 @@ function processResponse(err, response) {
                   output+=csv.data[i]['District']+'<br>'; 
           }
           else if(c>0 && area=='state')
-          {
-            console.log('const : '+c);
-            var sum=0.0;
+          {            
+            var sum=0.0,count=0;
             var st=csv.data[0]['State'];
             output = 'States with ' + field[0] + ' less than ' + c + ' : <br>';
             for(var i=0; i<csv.data.length; i++){
               if(csv.data[i]['State']==st && csv.data[i]['Tier'] == type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')
-                sum+=parseFloat(csv.data[i][field[0]]);
+			  {
+				  sum+=parseFloat(csv.data[i][field[0]]);
+				  ++count;
+			  }
               else if(csv.data[i]['State']!=st && csv.data[i]['Tier']==type)
               {
+				  if(isPercent(field[0]) && count>0)
+					  sum/=count;
                 if(sum<c)
-                  output += st+' ('+sum+') <br>';
+                  output += st+' ('+sum.toFixed(2)+') <br>';
                 sum=0;
+				count=0;
                 st = csv.data[i]['State'];
               }
             }
@@ -642,30 +696,46 @@ function processResponse(err, response) {
             //print all state names whose f.value > state.fvalue
 
             //first extracting  state.fvalue
-            var sfval = 0.0;
+            var sfval = 0.0,count=0;
             for(var i=0;i<csv.data.length;++i)
               if(csv.data[i]['State']==state[0] && csv.data[i]['Tier']==type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')
-                sfval += parseFloat(csv.data[i][field[0]]);
-        
+			  {
+				  sfval += parseFloat(csv.data[i][field[0]]);
+				  count++;
+			  }
+			if(isPercent(field[0]) && count>0)
+				sfval/=count;
+			count=0;
             //comparing each state.type fvalue with sfvalue
             output='States with '+field[0]+' less than that of '+state[0]+' : <br>';
-            var st='',fval=0.0;
+            var st='',fval=0.0,count=0;
             for(var i=0;i<csv.data.length;++i)          
             {  
               if(csv.data[i]['State']==st && csv.data[i]['Tier']==type && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')                                          
-                fval+=parseFloat(csv.data[i][field[0]]);
+			  {
+				  fval+=parseFloat(csv.data[i][field[0]]);
+				  count++;
+			  }
               else if(csv.data[i]['State']!=st && csv.data[i]['Tier']==type)
               {               
+				if(isPercent(field[0]) && count>0)
+					fval/=count;
                 if(fval<sfval)
                   output += st + '<br>';
                 st = csv.data[i]['State'];                            
                 fval=0.0;
+				count=0;
               }
             }
           }
           else if(area == 'district' && state.length>0)
           {
-            // print all district names of that state where fvalue1 < fvalue2
+            // print all district names of that state where fvalue1 < fvalue2  				
+  					output = 'Districts in '+ state[0] +' where '+field[0]+' is less than '+field[1]+' : <br>';
+  					for(var i=0;i<csv.data.length;++i)
+  						if(csv.data[i]['State']==state[0] && csv.data[i]['Tier']==type  && csv.data[i][field[0]]!='Not available' && csv.data[i][field[0]]!='NA')
+  							if(parseFloat(csv.data[i][field[0]])<parseFloat(csv.data[i][field[1]]))
+  								output+=csv.data[i]['District']+'<br>'; 
           }
           else if(area =='district')
           {
@@ -679,7 +749,7 @@ function processResponse(err, response) {
           else if(area =='state')
           {
             // print all state names of India where total fvalue1 < fvalue2
-            var fv1 =0.0,fv2=0.0,maxst='';
+            var fv1 =0.0,fv2=0.0,maxst='',count=0;
             var st = csv.data[0]['State'];
             output = 'State with '+field[0]+' greater than '+field[1]+' : <br>';
             for(var i=0;i<csv.data.length;++i)            
@@ -687,14 +757,21 @@ function processResponse(err, response) {
               {                                         
                 fv1+=parseFloat(csv.data[i][field[0]]);
                 fv2+=parseFloat(csv.data[i][field[1]]);
+				count++;
               }
               else if(csv.data[i]['State']!=st && csv.data[i]['Tier']==type)
               {
+				  if(isPercent(field[0]) && count>0)
+				  {
+					fvl/=count;
+					fv2/=count;
+				  }
                 if(fv1<fv2)
                   output+=st+'<br>';
                 st = csv.data[i]['State'];                        
                 fv1=0.0;
                 fv2=0.0;
+				count=0;
               }
           }
 				break;
