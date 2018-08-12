@@ -1,7 +1,3 @@
-population of jaipur
-state with highest population 
-district with highest literates in rajasthan
-state with lowest population
 
 #show #avg #irrelevant
 
@@ -19,15 +15,21 @@ state with lowest population
 
 #maximum
 
-3.1. district of STATE with highest FIELD
-3.2. district with highest FIELD
+3.1. district of STATE with highest FIELD ...
+3.2. district with highest FIELD ...
 3.3. state with highest FIELD
+3.4. C districts with highest FIELD
+3.5. C districts in STATE with highest FIELD
+3.6. C states with highest FIELD
 
 #minimum
 
 4.1. district of STATE with lowest FIELD
 4.2. district with lowest FIELD
 4.3. state with lowest FIELD
+3.4. C districts with lowest FIELD
+3.5. C districts in STATE with lowest FIELD
+3.6. C states with lowest FIELD
 
 #greaterthan
 
@@ -35,18 +37,26 @@ state with lowest population
 5.2. districts of STATE where FIELD1 greater than FIELD2
 5.3. districts where FIELD1 greater than FIELD2
 5.4. states where FIELD1 greater than FIELD2
+5.5. states with FIELD greater than that of STATE
+5.6. districts with FIELD greater than C
+5.7. districts in STATE with FIELD greater than C
+5.8. states with FIELD greater than C
 
 #lessthan
 
-5.1. districts where FIELD less than that of DISTRICT
-5.2. districts of STATE where FIELD1 less than FIELD2
-5.3. districts where FIELD1 less than FIELD2
-5.4. states where FIELD1 less than FIELD2
+6.1. districts where FIELD less than that of DISTRICT
+6.2. districts of STATE where FIELD1 less than FIELD2
+6.3. districts where FIELD1 less than FIELD2
+6.4. states where FIELD1 less than FIELD2
+6.5. states with FIELD less than that of STATE
+5.6. districts with FIELD less than C
+5.7. districts in STATE with FIELD less than C
+5.8. states with FIELD less than C
 
 #capability
 
-6.1. what can i ask u? (and similar questions)
+7.1. what can i ask u? (and similar questions)
 
 #bye
 
-7.1. goodbye. (and similar messages)
+8.1. goodbye. (and similar messages)
