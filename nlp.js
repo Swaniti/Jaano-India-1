@@ -96,7 +96,7 @@ function processResponse(err, response) {
   					
   					for(var i=0;i<csv.data.length;++i)
   						if(csv.data[i]['District']==district[0] && csv.data[i]['Tier']==type)
-  							output = type + ' ' + field[0] + ' in ' + district[0] + ' : ' + csv.data[i][field[0]];
+  							output = type + ' ' + field[0] + ' in ' + district[0] + ' : <b>' + csv.data[i][field[0]]+'</b>';
   				}
   				else if(state.length>0 && area == 'district')
   				{
@@ -107,9 +107,9 @@ function processResponse(err, response) {
   						if(csv.data[i]['State']==state[0] && csv.data[i]['Tier']==type)
   						{
   							sum+=parseFloat(csv.data[i][field[0]]);
-  							output+=csv.data[i]['District']+' : '+ csv.data[i][field[0]]+'<br>';
+  							output+=csv.data[i]['District']+' : <b>'+ csv.data[i][field[0]]+'</b><br>';
   						}
-  					output += type+' '+field[0]+' in '+state[0]+' : '+sum;
+  					output += type+' '+field[0]+' in '+state[0]+' : <b>'+sum+'</b>';
   				}  				
   				else if(state.length>0)
   				{
@@ -126,7 +126,7 @@ function processResponse(err, response) {
   						output=type+' ';
             if(isPercent(field[0]))
               sum/=count;
-  					output += field[0]+' in '+state[0]+' : '+sum; 					
+  					output += field[0]+' in '+state[0]+' : <b>'+sum+'</b>'; 					
   				}
   				
   				else if(field.length>0)
@@ -146,7 +146,7 @@ function processResponse(err, response) {
   						{  
                 if(isPercent(field[0]))
                   subsum/=dcount;
-  							output+=st+' : '+ subsum.toFixed(2)+'<br>';
+  							output+=st+' : <b>'+ subsum.toFixed(2)+'</b><br>';
   							st = csv.data[i]['State'];
                 if(subsum>0)
   							sum+=subsum;
@@ -157,7 +157,7 @@ function processResponse(err, response) {
   					 
               if(isPercent(field[0]))
                 sum/=scount;
-  					output += '<br>' + type+' '+field[0]+' in india : '+sum.toFixed(2);
+  					output += '<br>' + type+' '+field[0]+' in india : <b>'+sum.toFixed(2)+'</b>';
   				}
   				else
   				{

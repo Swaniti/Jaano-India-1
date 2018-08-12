@@ -7,7 +7,7 @@ $("#user-input-form").on("submit", function (e) {
   var message = $("#user-input").val();
   //exports.input = message;
 
-  outputArea.append('\n<li class="left clearfix admin_chat">\n<div class="chat-body1 clearfix">\n<p>\n<span style="color:rgb(107,203,239); display:block">You</span>\n<span style="display:block; padding:5px 0px 5px 0px;">'+ message +'</span>\n<span style="font-size:0.85em; color:grey; display:block; float:right;">09:40PM</span>\n</p>\n</div>\n</li>\n');
+  outputArea.append('\n<li class="left clearfix admin_chat">\n<div class="chat-body1 clearfix">\n<p>\n<span style="color:rgb(107,203,239); display:block">You</span>\n<span style="display:block; padding:5px 0px 5px 0px;">'+ message +'</span>\n</p>\n</div>\n</li>\n');
   document.getElementById('user-input').text = '';
   var div = $("#chat_area");
   div.scrollTop(div.prop('scrollHeight'));
@@ -20,7 +20,7 @@ $("#user-input-form").on("submit", function (e) {
                 })
           .done(function(data){
             console.log(data);
-            outputArea.append('\n<li class="left clearfix partner_chat">\n<span class="chat-img1 pull-left"><img src="robot-face.png" alt="User Avatar" style="background-color: #FF9933;" class="img-circle img-fluid"></span>\n<div class="chat-body2 clearfix">\n<p>\n<span style="color:rgb(107,203,239); display:block">Bot</span>\n<span style="display:block; padding:5px 0px 5px 0px;">'+ data +'</span>\n<span style="font-size:0.85em; color:grey; display:block; float:right;">09:40PM</span>\n</p>\n</div>\n</li>\n');
+            outputArea.append('\n<li class="left clearfix partner_chat">\n<span class="chat-img1 pull-left"><img src="robot-face.png" alt="User Avatar" style="background-color: #FF9933;" class="img-circle img-fluid"></span>\n<div class="chat-body2 clearfix">\n<p>\n<span style="color:rgb(107,203,239); display:block">Bot</span>\n<span style="display:block; padding:5px 0px 5px 0px;">'+ data +'</span>\n</p>\n</div>\n</li>\n');
           });          
   
 
