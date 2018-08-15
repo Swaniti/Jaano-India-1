@@ -1,4 +1,5 @@
 
+<img src="https://raw.githubusercontent.com/jainsomya972/jaano-india-chatbot/master/Jaano_India.png"/>
 <h1 id="welcome-to-jaano-india-chatbot">Welcome to Jaano India Chatbot!</h1>
 <p><strong>Jaano India Chatbot</strong> is a user-friendly, smart and fast chatbot to provide releavant data of India by chatting with it.<br>
 Ask Jaano India Chatbot anything about public data of India, it will not dissapoint you.<br>
