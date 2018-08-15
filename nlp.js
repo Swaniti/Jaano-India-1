@@ -82,11 +82,11 @@ function processResponse(err, response) {
       output = '';
       
 	  switch(intent)
-  		{
-  			case 'welcome':{
-  				console.log('welcome to jaano india. Ask me anything about indian public data');
-  				break;
-  			};
+  		{  			
+			case 'hi':{
+				output = 'Hi :) welcome to jaano india. Ask me anything about indian public data';
+				break;
+			};
   			case 'show':
   			case 'average':
   			case 'irrelevant':{
