@@ -1,7 +1,3 @@
----
-
-
----
 
 <h1 id="welcome-to-jaano-india-chatbot">Welcome to Jaano India Chatbot!</h1>
 <p><strong>Jaano India Chatbot</strong> is a user-friendly, smart and fast chatbot to provide releavant data of India by chatting with it.<br>
