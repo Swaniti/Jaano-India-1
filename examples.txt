@@ -15,8 +15,8 @@
 
 #maximum
 
-3.1. district of STATE with highest FIELD ...
-3.2. district with highest FIELD ...
+3.1. district of STATE with highest FIELD 
+3.2. district with highest FIELD
 3.3. state with highest FIELD
 3.4. C districts with highest FIELD
 3.5. C districts in STATE with highest FIELD

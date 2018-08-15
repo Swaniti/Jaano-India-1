@@ -106,8 +106,15 @@ function processResponse(err, response) {
   					for(var i=0;i<csv.data.length;++i)  					
   						if(csv.data[i]['State']==state[0] && csv.data[i]['Tier']==type)
   						{
-  							sum+=parseFloat(csv.data[i][field[0]]);
-  							output+=csv.data[i]['District']+' : <b>'+ csv.data[i][field[0]]+'</b><br>';
+							var data = parseFloat(csv.data[i][field[0]]);
+  													
+  							output+=csv.data[i]['District']+' : <b>';
+							if(data>0){
+								sum+=data;	
+								output+=csv.data[i][field[0]]+'</b><br>';
+							}
+							else
+								output+='data not available</b><br>';						
   						}
   					output += type+' '+field[0]+' in '+state[0]+' : <b>'+sum+'</b>';
   				}  				
@@ -115,18 +122,23 @@ function processResponse(err, response) {
   				{
   					//print sum of all district.type fvalues of that state 
   					var sum=0.0;
-            var count=0;
+					var count=0;
   					for(var i=0;i<csv.data.length;++i)  					
-  						if(csv.data[i]['State']==state[0] && csv.data[i]['Tier']==type && parseInt(csv.data[i][field[0]])>0)
-  							{
-                  sum+=parseFloat(csv.data[i][field[0]]);
-                  ++count;
-                }
-  						if(type != 'Total')  						
+  						if(csv.data[i]['State']==state[0] && csv.data[i]['Tier']==type)
+  						{
+							var data = parseFloat(csv.data[i][field[0]]);
+							if(data > 0)
+							sum+=data;
+							++count;
+						}
+					if(type != 'Total')  						
   						output=type+' ';
-            if(isPercent(field[0]))
-              sum/=count;
-  					output += field[0]+' in '+state[0]+' : <b>'+sum+'</b>'; 					
+					if(isPercent(field[0]))
+						sum/=count;		
+					if(sum>0)
+  					output += field[0]+' in '+state[0]+' : <b>'+sum.toFixed(2)+'</b>'; 			
+					else
+					output += field[0]+' in '+state[0]+' : <b>data not available</b>';
   				}
   				
   				else if(field.length>0)

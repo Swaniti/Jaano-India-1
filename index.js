@@ -16,14 +16,16 @@ $("#user-input-form").on("submit", function (e) {
   $.ajax({
                     type: "GET",
                     url: 'http://localhost:3000/input='+message,         
-                    dataType: 'text',
+                    dataType: 'text',					
                 })
           .done(function(data){
             console.log(data);
             outputArea.append('\n<li class="left clearfix partner_chat">\n<span class="chat-img1 pull-left"><img src="robot-face.png" alt="User Avatar" style="background-color: #FF9933;" class="img-circle img-fluid"></span>\n<div class="chat-body2 clearfix">\n<p>\n<span style="color:rgb(107,203,239); display:block">Bot</span>\n<span style="display:block; padding:5px 0px 5px 0px;">'+ data +'</span>\n</p>\n</div>\n</li>\n');
-          });          
-  
+          })
+		  .fail(function (jqXHR, textStatus) {
+			outputArea.append('\n<li class="left clearfix partner_chat">\n<span class="chat-img1 pull-left"><img src="robot-face.png" alt="User Avatar" style="background-color: #FF9933;" class="img-circle img-fluid"></span>\n<div class="chat-body2 clearfix">\n<p>\n<span style="color:rgb(107,203,239); display:block">Bot</span>\n<span style="display:block; padding:5px 0px 5px 0px;">'+ 'The Internet and I aren\'t talking right now!<br>Make sure you are connected to Internet. ' + '</span>\n</p>\n</div>\n</li>\n');
 
+		  });
   $("#user-input").val("");
 
 });
