@@ -90,7 +90,9 @@ function processResponse(err, response) {
   			case 'show':
   			case 'average':
   			case 'irrelevant':{
-  				if(district.length>0)
+				if(field.length==0)
+					output='I\'m not sure what are you saying :(. please try rephrasing it.';
+  				else if(district.length>0)
   				{
   					//print field value in district.type 
   					
@@ -178,7 +180,9 @@ function processResponse(err, response) {
   				break;
   			};
   			case 'total':{
-  				if(district.length>0)
+				if(field.length==0)
+					output='I\'m not sure what are you saying :(. please try rephrasing it.';
+  				else if(district.length>0)
   				{
   					//print fvalue of district.type  					
   					for(var i=0;i<csv.data.length;++i)
@@ -226,7 +230,9 @@ function processResponse(err, response) {
   			};
   			case 'maximum':{
 			  var c = parseFloat(extractNumber(newMessageFromUser));
-			  if(c>0 && area=='district'  && state.length>0)
+			  if(field.length==0)
+					output='I\'m not sure what are you saying :( please try rephrasing it.';
+			  else if(c>0 && area=='district'  && state.length>0)
 			  {
 				var dist = [];
 				for(var i=0; i<csv.data.length; i++){
@@ -357,7 +363,9 @@ function processResponse(err, response) {
   			};
   			case 'minimum':{
           var c = parseFloat(extractNumber(newMessageFromUser));
-          if(c>0 && area=='district' && state.length>0)
+		  if(field.length==0)
+			output='I\'m not sure what are you saying :( please try rephrasing it.';
+          else if(c>0 && area=='district' && state.length>0)
           {            
             var dist = [];
             for(var i=0; i<csv.data.length; i++){
@@ -484,7 +492,9 @@ function processResponse(err, response) {
 			case 'greaterthan':{
 				var c = parseFloat(extractNumber(newMessageFromUser));
 				console.log(5);
-          if(c>0 && area=='district' && state.length>0)
+				if(field.length==0)
+					output='I\'m not sure what are you saying :( please try rephrasing it.';
+          else if(c>0 && area=='district' && state.length>0)
           {
             console.log('const : '+c);
             // print all district names of that state where fvalue1 > c        
@@ -641,7 +651,9 @@ function processResponse(err, response) {
 			case 'lessthan':{
 				console.log('entered less than');
         var c = parseFloat(extractNumber(newMessageFromUser));
-          if(c>0 && area=='district' && state.length>0)
+		  if(field.length==0)
+			output='I\'m not sure what are you saying :(. please try rephrasing it.';
+          else if(c>0 && area=='district' && state.length>0)
           {            
             // print all district names of that state where fvalue1 > c        
             output = 'Districts in '+ state[0] +' where '+field[0]+' is less than '+c+' : <br>';
